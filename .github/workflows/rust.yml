@@ -17,7 +17,25 @@ jobs:
         working-directory: src-tauri
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust toolchain (primary)
+        id: setup_rust
+        uses: dtolnay/rust-toolchain@stable
+        continue-on-error: true
+      - name: Setup Rust toolchain (fallback with retry)
+        if: ${{ steps.setup_rust.outcome != 'success' }}
+        uses: nick-invision/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            curl https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal --default-toolchain stable
+            echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+            . "$HOME/.cargo/env"
+            rustc --version
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            src-tauri
       - name: Build
         run: cargo build --verbose
       - name: Run tests
