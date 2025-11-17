@@ -32,6 +32,18 @@ jobs:
             echo "$HOME/.cargo/bin" >> $GITHUB_PATH
             . "$HOME/.cargo/env"
             rustc --version
+      - name: Install system dependencies (WebKitGTK/GTK)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.0-dev \
+            libgtk-3-dev \
+            libglib2.0-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            pkg-config
+      - name: Ensure pkg-config path
+        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig" >> $GITHUB_ENV
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
